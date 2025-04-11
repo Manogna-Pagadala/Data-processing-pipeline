@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-connect-service
+spec:
+  selector:
+    app: kafka-connect
+  ports:
+  - protocol: TCP
+    port: 8083
+    targetPort: 8083
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-connect-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-connect
+  template:
+    metadata:
+      labels:
+        app: kafka-connect
+    spec:
+      containers:
+        - name: kafka-connect
+          image: veedata/kafka-neo4j-connect:latest
+          env:
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              value: "kafka-service:29092"
+            - name: CONNECT_GROUP_ID
+              value: "neo4j-connect"
+            - name: NEO4J_SERVER_URI
+              value: "bolt://neo4j:7687"
+            - name: NEO4J_DATABASE
+              value: "neo4j"
+            - name: NEO4J_USERNAME
+              value: "neo4j"
+            - name: NEO4J_PASSWORD
+              value: "project2phase2"
+          ports:
+            - containerPort: 8083
+          resources:
+            limits:
+              memory: 2Gi
